@@ -34,8 +34,8 @@ func main() {
 		logger.Error("error while parsing the request header", "err", err.Error())
 	}
 
-	buf := make([]byte, 8)
-	buf = binary.BigEndian.AppendUint32(buf, 0)
+	buf := make([]byte, 0, 8)
+	buf = binary.BigEndian.AppendUint32(buf, 4)
 	buf = binary.BigEndian.AppendUint32(buf, uint32(requestHeader.CorrelationId))
 	conn.Write(buf)
 
@@ -69,5 +69,8 @@ func parseRequestHeaderv2(r io.Reader) (*RequestHeader, error) {
 		s := string(buf)
 		header.ClientId = &s
 	}
+	tagBuffer := make([]byte, 1)
+	io.ReadFull(r, tagBuffer)
+	// TODO: implement the tag buffer feature
 	return header, nil
 }
