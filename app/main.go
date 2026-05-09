@@ -29,6 +29,8 @@ func main() {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
 	}
+	var messageSize int32
+	binary.Read(conn, binary.BigEndian, &messageSize)
 	logger.Debug("reading the request header")
 	requestHeader, err := parseRequestHeaderv2(conn)
 	if err != nil {
@@ -37,7 +39,7 @@ func main() {
 	logger.Debug("DONE reading the request header")
 
 	buf := make([]byte, 0, 8)
-	buf = binary.BigEndian.AppendUint32(buf, 4)
+	buf = binary.BigEndian.AppendUint32(buf, uint32(messageSize))
 	buf = binary.BigEndian.AppendUint32(buf, uint32(requestHeader.CorrelationId))
 	logger.Debug("Sending the response")
 	conn.Write(buf)
