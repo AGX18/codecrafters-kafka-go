@@ -27,7 +27,7 @@ func main() {
 	}
 	buf := make([]byte, 8)
 	binary.BigEndian.PutUint32(buf, 0)
-	binary.BigEndian.PutUint32(buf, 7)
+	binary.BigEndian.PutUint32(buf[4:], 7)
 	conn.Write(buf)
 
 }
