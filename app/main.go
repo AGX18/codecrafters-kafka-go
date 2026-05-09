@@ -35,8 +35,8 @@ func main() {
 	}
 
 	buf := make([]byte, 0, 8)
-	buf = binary.BigEndian.AppendUint32(buf, 4)
-	buf = binary.BigEndian.AppendUint32(buf, uint32(requestHeader.CorrelationId))
+	binary.BigEndian.PutUint32(buf[0:], 4)                                   // write at index 0
+	binary.BigEndian.PutUint32(buf[4:], uint32(requestHeader.CorrelationId)) // write at index 4
 	conn.Write(buf)
 
 }
