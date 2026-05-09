@@ -34,9 +34,9 @@ func main() {
 		logger.Error("error while parsing the request header", "err", err.Error())
 	}
 
-	buf := make([]byte, 0, 8)
-	binary.BigEndian.PutUint32(buf[0:], 4)                                   // write at index 0
-	binary.BigEndian.PutUint32(buf[4:], uint32(requestHeader.CorrelationId)) // write at index 4
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint32(buf, 4)
+	binary.BigEndian.PutUint32(buf, uint32(requestHeader.CorrelationId))
 	conn.Write(buf)
 
 }
