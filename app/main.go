@@ -43,9 +43,14 @@ func handleConnection(conn net.Conn, logger *slog.Logger) {
 		request := parseRequest(rfm, logger)
 		requestBody, err := parseApiVersionsRequestBody(rfm)
 		logger.Info(fmt.Sprintf("request body: %v", requestBody))
+		if err == io.EOF {
+			logger.Info("client closed the connection")
+			break
+		}
+
 		if err != nil {
 			logger.Error("error while parsing the request body", "err", err.Error())
-			break
+			continue
 		}
 
 		logger.Debug("reading the request header")
