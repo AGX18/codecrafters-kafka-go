@@ -38,9 +38,10 @@ func main() {
 	}
 	logger.Debug("DONE reading the request header")
 
-	buf := make([]byte, 0, 8)
+	buf := make([]byte, 0, 10)
 	buf = binary.BigEndian.AppendUint32(buf, uint32(messageSize))
 	buf = binary.BigEndian.AppendUint32(buf, uint32(requestHeader.CorrelationId))
+	buf = binary.BigEndian.AppendUint16(buf, uint16(getErrorCode(requestHeader.ApiVersion))) // error code for unsupported version
 	logger.Debug("Sending the response")
 	conn.Write(buf)
 
@@ -78,4 +79,11 @@ func parseRequestHeaderv2(r io.Reader) (*RequestHeader, error) {
 	io.ReadFull(r, tagBuffer)
 	// TODO: implement the tag buffer feature
 	return header, nil
+}
+
+func getErrorCode(apiVersion int16) int16 {
+	if apiVersion >= 0 && apiVersion <= 4 {
+		return 0
+	}
+	return 35
 }
