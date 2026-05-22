@@ -170,7 +170,7 @@ type ApiVersionsResponse struct {
 
 func (r *ApiVersionsResponse) encode(w *bufio.Writer) error {
 	// Encode the message size
-	messageSize := 4 + 2 + calcUvarintSize(uint64(len(r.ApiKeys)+1)) + (6 * len(r.ApiKeys)) + 4 + 1
+	messageSize := 4 + 2 + calcUvarintSize(uint64(len(r.ApiKeys)+1)) + (7 * len(r.ApiKeys)) + 4 + 1
 	binary.Write(w, binary.BigEndian, uint32(messageSize))
 
 	// Encode the correlation ID
