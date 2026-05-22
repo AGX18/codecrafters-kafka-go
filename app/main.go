@@ -44,7 +44,7 @@ func main() {
 	logger.Debug("Sending the response")
 	resp := &ApiVersionsResponse{
 		ErrorCode:      getErrorCode(request.Header.ApiVersion),
-		ApiKeys:        []ApiKey{},
+		ApiKeys:        []ApiKey{{ApiKey: request.Header.ApiKey, MinVersion: 0, MaxVersion: 4}},
 		CorrelationId:  request.Header.CorrelationId,
 		ThrottleTimeMs: 0,
 	}
@@ -199,6 +199,8 @@ func (r *ApiVersionsResponse) encode(w *bufio.Writer) error {
 		if err != nil {
 			return err
 		}
+		// TAG_BUFFER for each API key entry
+		w.WriteByte(0x00)
 	}
 
 	// Encode the throttle time
@@ -207,7 +209,8 @@ func (r *ApiVersionsResponse) encode(w *bufio.Writer) error {
 		return err
 	}
 
-	binary.Write(w, binary.BigEndian, int16(0)) // tag buffer
+	// TAG_BUFFER at the end
+	w.WriteByte(0x00)
 
 	return nil
 
