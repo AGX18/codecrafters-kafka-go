@@ -38,27 +38,28 @@ func main() {
 }
 
 func handleConnection(conn net.Conn, logger *slog.Logger) {
+	for {
+		rfm := bufio.NewReader(conn)
+		request := parseRequest(rfm, logger)
+		requestBody, err := parseApiVersionsRequestBody(rfm)
+		logger.Info(fmt.Sprintf("request body: %v", requestBody))
+		if err != nil {
+			logger.Error("error while parsing the request body", "err", err.Error())
+		}
 
-	rfm := bufio.NewReader(conn)
-	request := parseRequest(rfm, logger)
-	requestBody, err := parseApiVersionsRequestBody(rfm)
-	logger.Info(fmt.Sprintf("request body: %v", requestBody))
-	if err != nil {
-		logger.Error("error while parsing the request body", "err", err.Error())
+		logger.Debug("reading the request header")
+
+		w := bufio.NewWriter(conn)
+		logger.Debug("Sending the response")
+		resp := &ApiVersionsResponse{
+			ErrorCode:      getErrorCode(request.Header.ApiVersion),
+			ApiKeys:        []ApiKey{{ApiKey: request.Header.ApiKey, MinVersion: 0, MaxVersion: 4}},
+			CorrelationId:  request.Header.CorrelationId,
+			ThrottleTimeMs: 0,
+		}
+		resp.encode(w)
+		w.Flush()
 	}
-
-	logger.Debug("reading the request header")
-
-	w := bufio.NewWriter(conn)
-	logger.Debug("Sending the response")
-	resp := &ApiVersionsResponse{
-		ErrorCode:      getErrorCode(request.Header.ApiVersion),
-		ApiKeys:        []ApiKey{{ApiKey: request.Header.ApiKey, MinVersion: 0, MaxVersion: 4}},
-		CorrelationId:  request.Header.CorrelationId,
-		ThrottleTimeMs: 0,
-	}
-	resp.encode(w)
-	w.Flush()
 }
 
 type RequestHeader struct {
