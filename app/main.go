@@ -169,8 +169,8 @@ type ApiVersionsResponse struct {
 }
 
 func (r *ApiVersionsResponse) encode(w *bufio.Writer) error {
-	messageSize := 4 + 2 + 1 + (6 * calcUvarintSize(uint64(len(r.ApiKeys)+1))) + 4 + 1
 	// Encode the message size
+	messageSize := 4 + 2 + calcUvarintSize(uint64(len(r.ApiKeys)+1)) + (6 * len(r.ApiKeys)) + 4 + 1
 	binary.Write(w, binary.BigEndian, uint32(messageSize))
 
 	// Encode the correlation ID
@@ -184,9 +184,6 @@ func (r *ApiVersionsResponse) encode(w *bufio.Writer) error {
 
 	// Encode the number of API keys
 	writeUvarint(w, uint64(len(r.ApiKeys)+1))
-	if err != nil {
-		return err
-	}
 
 	// Encode each API key
 	for _, apiKey := range r.ApiKeys {
