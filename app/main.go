@@ -53,8 +53,14 @@ func handleConnection(conn net.Conn, logger *slog.Logger) {
 		w := bufio.NewWriter(conn)
 		logger.Debug("Sending the response")
 		resp := &ApiVersionsResponse{
-			ErrorCode:      getErrorCode(request.Header.ApiVersion),
-			ApiKeys:        []ApiKey{{ApiKey: request.Header.ApiKey, MinVersion: 0, MaxVersion: 4}},
+			ErrorCode: getErrorCode(request.Header.ApiVersion),
+			ApiKeys: []ApiKey{
+				{
+					ApiKey: 18, MinVersion: 0, MaxVersion: 4,
+				}, {
+					ApiKey: 75, MinVersion: 0, MaxVersion: 0,
+				},
+			},
 			CorrelationId:  request.Header.CorrelationId,
 			ThrottleTimeMs: 0,
 		}
