@@ -25,11 +25,20 @@ func main() {
 		fmt.Println("Failed to bind to port 9092")
 		os.Exit(1)
 	}
-	conn, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			logger.Error(fmt.Sprintf("Error accepting connection: %v", err.Error()))
+			os.Exit(1)
+		}
+
+		go handleConnection(conn, logger)
 	}
+
+}
+
+func handleConnection(conn net.Conn, logger *slog.Logger) {
+
 	rfm := bufio.NewReader(conn)
 	request := parseRequest(rfm, logger)
 	requestBody, err := parseApiVersionsRequestBody(rfm)
@@ -50,7 +59,6 @@ func main() {
 	}
 	resp.encode(w)
 	w.Flush()
-
 }
 
 type RequestHeader struct {
