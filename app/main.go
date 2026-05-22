@@ -45,6 +45,7 @@ func handleConnection(conn net.Conn, logger *slog.Logger) {
 		logger.Info(fmt.Sprintf("request body: %v", requestBody))
 		if err != nil {
 			logger.Error("error while parsing the request body", "err", err.Error())
+			break
 		}
 
 		logger.Debug("reading the request header")
