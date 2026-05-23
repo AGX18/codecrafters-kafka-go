@@ -109,3 +109,69 @@ func parseApiVersionsRequestBody(r *bufio.Reader) (*ApiVersionsRequestBody, erro
 		TagBuffer:             tagBuffer,
 	}, nil
 }
+
+type TopicPartitionsRequest struct {
+	Topics                 []TopicRequestV0
+	ResponsePartitionLimit int32
+	Cursor                 []byte // nullable, -1 = null
+}
+
+type TopicRequestV0 struct {
+	TopicName string
+}
+
+func ParseTopicPartitionsRequest(reader *bufio.Reader) (*TopicPartitionsRequest, error) {
+	req := &TopicPartitionsRequest{}
+
+	arrayLen, err := reader.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+	topicCount := int(arrayLen) - 1
+
+	for i := 0; i < topicCount; i++ {
+		nameLen, err := reader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+
+		nameBytes := make([]byte, int(nameLen)-1)
+		_, err = io.ReadFull(reader, nameBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		topic := TopicRequestV0{TopicName: string(nameBytes)}
+		req.Topics = append(req.Topics, topic)
+
+		// Read the tag buffer for each topic
+		_, err = reader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &req.ResponsePartitionLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	cursor, err := reader.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+
+	if cursor != 0xff {
+		return nil, fmt.Errorf("non-null cursor not supported")
+	}
+
+	req.Cursor = nil
+
+	// discard TAG_BUFFER
+	_, err = reader.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
